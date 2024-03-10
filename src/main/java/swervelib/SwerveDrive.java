@@ -859,6 +859,71 @@ public class SwerveDrive {
 		}
 	}
 
+	public void updateOdometryFromLogs(double currentTimeSeconds, Rotation2d yaw, SwerveModulePosition[] modulePositions) {
+		odometryLock.lock();
+		try {
+			// Update odometry
+			//var yaw = getYaw();
+			//var modulePositions = getModulePositions();
+			swerveDrivePoseEstimator.updateWithTime(currentTimeSeconds, yaw, modulePositions);
+			odometryOnlyPoseEstimator.updateWithTime(currentTimeSeconds, yaw, modulePositions);
+
+			// Update angle accumulator if the robot is simulated
+			if (SwerveDriveTelemetry.verbosity.ordinal() >= TelemetryVerbosity.HIGH.ordinal()) {
+				Pose2d[] modulePoses =
+						getSwerveModulePoses(swerveDrivePoseEstimator.getEstimatedPosition());
+				if (SwerveDriveTelemetry.isSimulation) {
+					simIMU.updateOdometry(kinematics, getStates(), modulePoses, field);
+				}
+
+				ChassisSpeeds measuredChassisSpeeds = getRobotVelocity();
+				SwerveDriveTelemetry.measuredChassisSpeeds[1] = measuredChassisSpeeds.vyMetersPerSecond;
+				SwerveDriveTelemetry.measuredChassisSpeeds[0] = measuredChassisSpeeds.vxMetersPerSecond;
+				SwerveDriveTelemetry.measuredChassisSpeeds[2] =
+						Math.toDegrees(measuredChassisSpeeds.omegaRadiansPerSecond);
+				SwerveDriveTelemetry.robotRotation = getOdometryHeading().getDegrees();
+			}
+
+			if (SwerveDriveTelemetry.verbosity.ordinal() >= TelemetryVerbosity.LOW.ordinal()) {
+				field.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
+				odometryOnlyFieldObject.setPose(odometryOnlyPoseEstimator.getEstimatedPosition());
+			}
+
+			double sumVelocity = 0;
+			for (SwerveModule module : swerveModules) {
+				SwerveModuleState moduleState = module.getState();
+				sumVelocity += Math.abs(moduleState.speedMetersPerSecond);
+				if (SwerveDriveTelemetry.verbosity == TelemetryVerbosity.HIGH) {
+					module.updateTelemetry();
+					SmartDashboard.putNumber("Raw IMU Yaw", getYaw().getDegrees());
+					SmartDashboard.putNumber("Adjusted IMU Yaw", getOdometryHeading().getDegrees());
+				}
+				if (SwerveDriveTelemetry.verbosity.ordinal() >= TelemetryVerbosity.HIGH.ordinal()) {
+					SwerveDriveTelemetry.measuredStates[module.moduleNumber * 2] =
+							moduleState.angle.getDegrees();
+					SwerveDriveTelemetry.measuredStates[(module.moduleNumber * 2) + 1] =
+							moduleState.speedMetersPerSecond;
+				}
+			}
+
+			// If the robot isn't moving synchronize the encoders every 100ms (Inspired by democrat's SDS
+			// lib)
+			// To ensure that everytime we initialize it works.
+			if (sumVelocity <= .01 && ++moduleSynchronizationCounter > 5) {
+				synchronizeModuleEncoders();
+				moduleSynchronizationCounter = 0;
+			}
+
+			if (SwerveDriveTelemetry.verbosity.ordinal() >= TelemetryVerbosity.HIGH.ordinal()) {
+				SwerveDriveTelemetry.updateData();
+			}
+		} catch (Exception e) {
+			odometryLock.unlock();
+			throw e;
+		}
+		odometryLock.unlock();
+	}
+
 	/**
 	 * Update odometry should be run every loop. Synchronizes module absolute encoders with relative
 	 * encoders periodically. In simulation mode will also post the pose of each module. Updates
