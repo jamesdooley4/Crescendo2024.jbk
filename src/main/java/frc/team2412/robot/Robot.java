@@ -1,17 +1,23 @@
 package frc.team2412.robot;
 
-import java.io.File;
-
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderHeaderAware;
+import com.opencsv.exceptions.CsvException;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.team2412.robot.util.MACAddress;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
@@ -67,12 +73,11 @@ public class Robot extends TimedRobot {
 		}
 
 		final double MAX_SPEED =
-		type == RobotType.BONK
-				? 3.0
-				: Robot.getInstance().getRobotType() == RobotType.PRACTICE
-						? 5.0
-						: Robot.getInstance().getRobotType() == RobotType.CRANE ? 3.0 : 1.0;
-
+				type == RobotType.BONK
+						? 3.0
+						: Robot.getInstance().getRobotType() == RobotType.PRACTICE
+								? 5.0
+								: Robot.getInstance().getRobotType() == RobotType.CRANE ? 3.0 : 1.0;
 
 		try {
 			swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(MAX_SPEED);
@@ -119,16 +124,50 @@ public class Robot extends TimedRobot {
 		Pose2d pose = new Pose2d();
 		swerveDrive.resetOdometry(pose);
 
+		//
+		String inputPath =
+				"C:\\Users\\jdool_46clpzz\\Downloads\\Glacier Peak (March 2-3)\\GlacierPeak_Mar3_Wpilog\\FRC_20240303_214420_WASNO_E9_TalonPositionsOnly.csv";
+		try (CSVReaderHeaderAware csvReader = new CSVReaderHeaderAware(new FileReader(inputPath))) {
+			for (int i=0; i < 100; i++) {
+				Map<String,String> entry = csvReader.readMap();
+				if (entry == null) {
+					break;
+				}
+
+				System.out.println("Record " + i + ": " + entry.toString());
+				i++;
+				if (i > 100) {
+					break;
+				}
+			}
+
+			// Record 76: {/Log0/Phoenix6/TalonFX-10/Position=0.031494140625, /Log0/Phoenix6/TalonFX-1/Position=0.01220703125, /Log0/Phoenix6/TalonFX-7/Position=0.021240234375, Timestamp=0.559128, /Log0/Phoenix6/TalonFX-4/Position=0.0009765625, /Log0/Phoenix6/TalonFX-8/Position=0.793701171875, /Log0/Phoenix6/TalonFX-5/Position=0.775390625, /Log0/Phoenix6/TalonFX-11/Position=0.218505859375, /Log0/Phoenix6/TalonFX-2/Position=0.835205078125}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (CsvException e) {
+			e.printStackTrace();
+		}
+
 		Rotation2d rotation = new Rotation2d();
 		SwerveModulePosition[] positions = new SwerveModulePosition[4];
-		for (int i=0; i<1000; i++) {
-			positions[0].distanceMeters = i * 0.01;
-			positions[1].distanceMeters = i * 0.01;
-			positions[2].distanceMeters = i * 0.01;
-			positions[3].distanceMeters = i * 0.01;
-			swerveDrive.updateOdometryFromLogs(i * 0.01, rotation, null);
+		positions[0] = new SwerveModulePosition();
+		positions[1] = new SwerveModulePosition();
+		positions[2] = new SwerveModulePosition();
+		positions[3] = new SwerveModulePosition();
 
-			System.out.println("Pose: " + swerveDrive.odometryOnlyPoseEstimator.getEstimatedPosition());
+		for (int i = 0; i < 400; i++) {
+			positions[0].distanceMeters = i * 0.01;
+			positions[0].angle = Rotation2d.fromDegrees(i);
+			positions[1].distanceMeters = i * 0.01;
+			positions[1].angle = Rotation2d.fromDegrees(i);
+			positions[2].distanceMeters = i * 0.01;
+			positions[2].angle = Rotation2d.fromDegrees(i);
+			positions[3].distanceMeters = i * 0.01;
+			positions[3].angle = Rotation2d.fromDegrees(i);
+			swerveDrive.updateOdometryFromLogs(i * 0.01, rotation, positions);
+
+			System.out.println(
+					i + " - Pose: " + swerveDrive.odometryOnlyPoseEstimator.getEstimatedPosition());
 		}
 	}
 

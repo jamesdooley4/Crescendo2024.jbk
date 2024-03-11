@@ -859,12 +859,13 @@ public class SwerveDrive {
 		}
 	}
 
-	public void updateOdometryFromLogs(double currentTimeSeconds, Rotation2d yaw, SwerveModulePosition[] modulePositions) {
+	public void updateOdometryFromLogs(
+			double currentTimeSeconds, Rotation2d yaw, SwerveModulePosition[] modulePositions) {
 		odometryLock.lock();
 		try {
 			// Update odometry
-			//var yaw = getYaw();
-			//var modulePositions = getModulePositions();
+			// var yaw = getYaw();
+			// var modulePositions = getModulePositions();
 			swerveDrivePoseEstimator.updateWithTime(currentTimeSeconds, yaw, modulePositions);
 			odometryOnlyPoseEstimator.updateWithTime(currentTimeSeconds, yaw, modulePositions);
 
@@ -930,6 +931,7 @@ public class SwerveDrive {
 	 * SmartDashboard with module encoder readings and states.
 	 */
 	public void updateOdometry() {
+		if (true) return;
 		odometryLock.lock();
 		try {
 			// Update odometry
