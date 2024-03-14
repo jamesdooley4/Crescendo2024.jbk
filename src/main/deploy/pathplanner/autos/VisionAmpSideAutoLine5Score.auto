@@ -20,7 +20,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "HighSpeakerToHighNoteLaunch2"
+            "pathName": null
           }
         },
         {
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "HighNoteLaunch2ToFarHighNoteToLaunch"
+            "pathName": null
           }
         },
         {
@@ -44,7 +44,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "launchSecondNoteLaunch"
+            "pathName": null
           }
         },
         {
@@ -56,13 +56,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "MidNoteToBottomNote"
+            "pathName": null
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "BottomNoteLaunch"
+            "pathName": null
           }
         },
         {

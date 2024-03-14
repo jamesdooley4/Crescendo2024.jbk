@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LowSpeakerToLowNote"
+            "pathName": null
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LowNoteToLowSpeaker"
+            "pathName": null
           }
         },
         {

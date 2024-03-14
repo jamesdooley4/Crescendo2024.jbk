@@ -20,7 +20,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SpeakerToMidNoteReturn"
+            "pathName": null
           }
         },
         {
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SpeakerToHighNoteReturn"
+            "pathName": null
           }
         },
         {
@@ -44,7 +44,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "MidSpeakerPassAutoLine"
+            "pathName": null
           }
         }
       ]

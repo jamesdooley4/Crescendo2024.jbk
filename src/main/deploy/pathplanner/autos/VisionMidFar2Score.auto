@@ -20,7 +20,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "midUnderStageCenterNoteLaunch"
+            "pathName": null
           }
         },
         {
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "launchPosFirstNoteCenterLineLaunch"
+            "pathName": null
           }
         },
         {

@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SpeakerToLowNote"
+            "pathName": null
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LowNoteToLaunch"
+            "pathName": null
           }
         },
         {
@@ -38,7 +38,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LowLaunchToMidNote"
+            "pathName": null
           }
         },
         {
@@ -50,7 +50,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "MidNoteToHighNoteLaunch"
+            "pathName": null
           }
         },
         {
