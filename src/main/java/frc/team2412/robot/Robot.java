@@ -2,6 +2,7 @@ package frc.team2412.robot;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderHeaderAware;
+import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvException;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,7 +15,10 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.team2412.robot.util.MACAddress;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -124,30 +128,6 @@ public class Robot extends TimedRobot {
 		Pose2d pose = new Pose2d();
 		swerveDrive.resetOdometry(pose);
 
-		//
-		String inputPath =
-				"C:\\Users\\jdool_46clpzz\\Downloads\\Glacier Peak (March 2-3)\\GlacierPeak_Mar3_Wpilog\\FRC_20240303_214420_WASNO_E9_TalonPositionsOnly.csv";
-		try (CSVReaderHeaderAware csvReader = new CSVReaderHeaderAware(new FileReader(inputPath))) {
-			for (int i=0; i < 100; i++) {
-				Map<String,String> entry = csvReader.readMap();
-				if (entry == null) {
-					break;
-				}
-
-				System.out.println("Record " + i + ": " + entry.toString());
-				i++;
-				if (i > 100) {
-					break;
-				}
-			}
-
-			// Record 76: {/Log0/Phoenix6/TalonFX-10/Position=0.031494140625, /Log0/Phoenix6/TalonFX-1/Position=0.01220703125, /Log0/Phoenix6/TalonFX-7/Position=0.021240234375, Timestamp=0.559128, /Log0/Phoenix6/TalonFX-4/Position=0.0009765625, /Log0/Phoenix6/TalonFX-8/Position=0.793701171875, /Log0/Phoenix6/TalonFX-5/Position=0.775390625, /Log0/Phoenix6/TalonFX-11/Position=0.218505859375, /Log0/Phoenix6/TalonFX-2/Position=0.835205078125}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (CsvException e) {
-			e.printStackTrace();
-		}
-
 		Rotation2d rotation = new Rotation2d();
 		SwerveModulePosition[] positions = new SwerveModulePosition[4];
 		positions[0] = new SwerveModulePosition();
@@ -155,19 +135,78 @@ public class Robot extends TimedRobot {
 		positions[2] = new SwerveModulePosition();
 		positions[3] = new SwerveModulePosition();
 
-		for (int i = 0; i < 400; i++) {
-			positions[0].distanceMeters = i * 0.01;
-			positions[0].angle = Rotation2d.fromDegrees(i);
-			positions[1].distanceMeters = i * 0.01;
-			positions[1].angle = Rotation2d.fromDegrees(i);
-			positions[2].distanceMeters = i * 0.01;
-			positions[2].angle = Rotation2d.fromDegrees(i);
-			positions[3].distanceMeters = i * 0.01;
-			positions[3].angle = Rotation2d.fromDegrees(i);
-			swerveDrive.updateOdometryFromLogs(i * 0.01, rotation, positions);
+		String inputPath =
+				"C:\\Users\\jdool_46clpzz\\Downloads\\Glacier Peak (March 2-3)\\GlacierPeak_Mar3_Wpilog\\FRC_20240303_214420_WASNO_E9_TalonPositionsOnly.csv";
 
-			System.out.println(
-					i + " - Pose: " + swerveDrive.odometryOnlyPoseEstimator.getEstimatedPosition());
+		String now = new SimpleDateFormat("yyMMdd-HHmmss").format(new Date());
+		String outputPath = 
+			"C:\\Users\\jdool_46clpzz\\Downloads\\Glacier Peak (March 2-3)\\GlacierPeak_Mar3_Wpilog\\FRC_20240303_214420_WASNO_E9_TalonPositions_OdometryTest" + now + ".csv";
+
+		try (CSVReaderHeaderAware csvReader = new CSVReaderHeaderAware(new FileReader(inputPath))) {
+			try (CSVWriter csvWriter = new CSVWriter(new FileWriter(outputPath))) {
+				String[] header = {
+					"Timestamp",
+					"OdometryTest/0",
+					"OdometryTest/1",
+					"OdometryTest/2"
+				};
+				csvWriter.writeNext(header);
+
+				int i =0;
+				do {
+					Map<String,String> entry = csvReader.readMap();
+					if (entry == null) {
+						break;
+					}
+
+					double timestamp = Double.parseDouble(entry.get("Timestamp"));
+					// System.out.println(timestamp + ": " + entry.toString());
+
+					// Record 76: {/Log0/Phoenix6/TalonFX-10/Position=0.031494140625,
+					// /Log0/Phoenix6/TalonFX-1/Position=0.01220703125,
+					// /Log0/Phoenix6/TalonFX-7/Position=0.021240234375,
+					// Timestamp=0.559128,
+					// /Log0/Phoenix6/TalonFX-4/Position=0.0009765625,
+					// /Log0/Phoenix6/TalonFX-8/Position=0.793701171875,
+					// /Log0/Phoenix6/TalonFX-5/Position=0.775390625,
+					// /Log0/Phoenix6/TalonFX-11/Position=0.218505859375,
+					// /Log0/Phoenix6/TalonFX-2/Position=0.835205078125
+
+					try {
+						positions[0].distanceMeters = Double.parseDouble(entry.get("/Log0/Phoenix6/TalonFX-1/Position"));
+						positions[0].angle = Rotation2d.fromDegrees(360.0 * Double.parseDouble(entry.get("/Log0/Phoenix6/TalonFX-2/Position")));
+						positions[1].distanceMeters = Double.parseDouble(entry.get("/Log0/Phoenix6/TalonFX-4/Position"));
+						positions[1].angle = Rotation2d.fromDegrees(360.0 * Double.parseDouble(entry.get("/Log0/Phoenix6/TalonFX-5/Position")));
+						positions[2].distanceMeters = Double.parseDouble(entry.get("/Log0/Phoenix6/TalonFX-7/Position"));
+						positions[2].angle = Rotation2d.fromDegrees(360.0 * Double.parseDouble(entry.get("/Log0/Phoenix6/TalonFX-8/Position")));
+						positions[3].distanceMeters = Double.parseDouble(entry.get("/Log0/Phoenix6/TalonFX-10/Position"));
+						positions[3].angle = Rotation2d.fromDegrees(360.0 * Double.parseDouble(entry.get("/Log0/Phoenix6/TalonFX-11/Position")));
+						swerveDrive.updateOdometryFromLogs(timestamp, rotation, positions);
+
+						Pose2d currentPose = swerveDrive.odometryOnlyPoseEstimator.getEstimatedPosition();
+						String[] row = {
+							Double.toString(timestamp),
+							Double.toString(currentPose.getX()),
+							Double.toString(currentPose.getY()),
+							Double.toString(currentPose.getRotation().getDegrees())
+						};
+						csvWriter.writeNext(row);
+
+						i++;
+						if (i%100 == 0) {
+							System.out.println(timestamp + ": " + swerveDrive.odometryOnlyPoseEstimator.getEstimatedPosition());
+						}
+					} catch (java.lang.NumberFormatException e) {
+						System.out.println(timestamp + ": Skipped due to parse failure");
+					}
+				} while (true);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (CsvException e) {
+			e.printStackTrace();
 		}
 	}
 
